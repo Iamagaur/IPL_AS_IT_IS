@@ -17,28 +17,6 @@ This project re-ranks every IPL career using a **contextual impact score** that 
 
 It then tests the famous IPL narratives ("Dhoni in chases," "Kohli in knockouts," "CSK at Chepauk," "Rohit groomed superstars") with raw ball-by-ball evidence and gives each one an honest verdict — *supported, partially supported, or rejected.*
 
-## Deploy to GitHub Pages
-
-1. Create a new GitHub repository (e.g. `ipl-goat`)
-2. Push the contents of the `site/` folder (just `index.html` and `data.json`):
-   ```bash
-   git init
-   git add index.html data.json
-   git commit -m "Initial deploy"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ipl-goat.git
-   git push -u origin main
-   ```
-3. In your repo, go to **Settings → Pages → Source** and select `Deploy from a branch / main / root`
-4. Visit `https://YOUR_USERNAME.github.io/ipl-goat/` (give it a minute)
-
-That's it. No build step, no framework, no server needed — just static HTML and a JSON file.
-
-## What's inside
-
-- `index.html` — the entire dashboard (HTML, CSS, and vanilla JS in one file)
-- `data.json` — pre-computed analytics output (78 KB)
-
 ## Methodology summary
 
 ### Batting impact
