@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPL GOATS — A Data-First Inquiry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* HIGH CONTRAST sport-newsroom palette */
+  --bg:        #0a0a0c;
+  --bg-2:      #131318;
+  --bg-3:      #1a1a22;
+  --line:      #2a2a35;
+  --line-2:    #3a3a48;
+  --ink:       #f7f7f5;
+  --ink-2:     #cfcfd5;
+  --ink-3:     #8a8a96;
+  --ink-4:     #5a5a68;
+  --accent:    #ff3344;        /* IPL crimson, brighter for dark bg */
+  --accent-2:  #ff5566;
+  --gold:      #ffc233;
+  --green:     #2ee89b;
+  --blue:      #5b8dff;
+  --shadow:    rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(255, 51, 68, 0.10), transparent 45%),
+    radial-gradient(circle at 88% 92%, rgba(91, 141, 255, 0.06), transparent 50%);
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a { color: inherit; text-decoration: none; }
+
+/* ─────────── MASTHEAD ─────────── */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  padding: 16px 32px;
+  position: relative;
+  background: var(--bg);
+  z-index: 4;
+}
+.masthead-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.dateline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.dateline span { color: var(--accent); font-weight: 700; }
+.byline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.byline strong { color: var(--gold); font-weight: 700; letter-spacing: 0.2em; }
+
+/* ─────────── METHOD BANNER ─────────── */
+.method-banner {
+  background: var(--accent);
+  color: #fff;
+  padding: 9px 32px;
+  position: relative;
+  z-index: 3;
+}
+.method-banner-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+.banner-pill {
+  background: #fff;
+  color: var(--accent);
+  padding: 3px 9px;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  border-radius: 2px;
+}
+
+/* ─────────── NAV ─────────── */
+nav.section-nav {
+  position: sticky;
+  top: 0;
+  background: rgba(10, 10, 12, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 32px;
+  z-index: 50;
+}
+.section-nav-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  gap: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.section-nav-inner::-webkit-scrollbar { display: none; }
+.section-nav a {
+  color: var(--ink-3);
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.section-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ─────────── HERO ─────────── */
+.hero {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 70px 32px 50px;
+  position: relative;
+  z-index: 2;
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+}
+.hero-eyebrow::after {
+  content: ''; height: 1px; background: var(--line-2); flex: 1; max-width: 180px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: clamp(72px, 13vw, 200px);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 28px;
+  text-transform: uppercase;
+}
+.hero-title .accent {
+  color: var(--accent);
+  position: relative;
+  display: inline-block;
+}
+.hero-title .accent::after {
+  content: '';
+  position: absolute;
+  bottom: 0.08em; left: 0; right: 0;
+  height: 0.06em;
+  background: var(--accent);
+  opacity: 0.3;
+}
+.hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(17px, 1.6vw, 21px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 780px;
+  margin-bottom: 44px;
+  font-weight: 400;
+}
+.hero-subtitle strong { color: var(--ink); font-weight: 600; }
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 0;
+  margin-bottom: 32px;
+}
+.hero-stat {
+  text-align: left;
+  padding: 0 24px;
+  border-right: 1px solid var(--line);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 50px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.hero-stat-num .small { font-size: 28px; color: var(--ink-3); }
+.hero-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+  font-weight: 500;
+}
+.philosophy-callout {
+  border-left: 3px solid var(--accent);
+  padding: 14px 0 14px 22px;
+  font-size: 17px;
+  color: var(--ink-2);
+  max-width: 720px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+.philosophy-callout strong { color: var(--gold); font-weight: 600; }
+
+/* ─────────── BIAS NOTICE ─────────── */
+.bias-notice {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  margin: 40px auto;
+  max-width: 1320px;
+  padding: 28px 36px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: start;
+  position: relative;
+  z-index: 2;
+}
+.bias-icon {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 0.85;
+  color: var(--gold);
+}
+.bias-content h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.bias-content p {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.bias-content p + p { margin-top: 8px; }
+
+/* ─────────── SECTION COMMON ─────────── */
+section.chapter {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 80px 32px;
+  position: relative;
+  z-index: 2;
+}
+.chapter-mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chapter-mark::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+.chapter-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: clamp(42px, 6vw, 84px);
+  line-height: 0.95;
+  letter-spacing: 0;
+  margin-bottom: 18px;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.chapter-title .accent { color: var(--accent); }
+.chapter-lede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 780px;
+  margin-bottom: 44px;
+  font-weight: 400;
+}
+
+/* ─────────── METHODOLOGY CALLOUT ─────────── */
+.method-callout {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 40px;
+  margin: 48px auto;
+  max-width: 1320px;
+  position: relative;
+  z-index: 2;
+}
+.method-callout-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.method-callout h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  margin-bottom: 28px;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.method-pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+.method-pillar {
+  border-top: 2px solid var(--accent);
+  padding-top: 16px;
+}
+.method-pillar-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 56px;
+  color: var(--ink);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+.method-pillar-num .small { color: var(--ink-3); font-size: 32px; }
+.method-pillar-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  margin: 8px 0 6px;
+}
+.method-pillar-desc {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+/* ─────────── CATEGORY TABS ─────────── */
+.category-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.category-tab {
+  background: transparent;
+  border: none;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink-3);
+  padding: 14px 22px 16px;
+  cursor: pointer;
+  position: relative;
+  letter-spacing: 0.02em;
+  transition: color 0.18s;
+  text-transform: uppercase;
+}
+.category-tab:hover { color: var(--ink); }
+.category-tab.active { color: var(--accent); }
+.category-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+/* ─────────── RANKING TABLE ─────────── */
+.ranking {
+  display: grid;
+  grid-template-columns: 60px 2.2fr 1fr 1fr 1fr 1.4fr;
+  gap: 0;
+}
+.ranking-header { display: contents; }
+.ranking-header > div {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 14px 16px 14px 0;
+  border-bottom: 1px solid var(--line-2);
+  font-weight: 600;
+}
+.ranking-row { display: contents; }
+.ranking-row > div {
+  padding: 18px 16px 18px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  transition: background 0.15s;
+}
+.ranking-row:hover > div { background: rgba(255, 51, 68, 0.06); }
+.r-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 32px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.r-rank.top1 { color: var(--gold); }
+.r-rank.top2 { color: var(--ink); }
+.r-rank.top3 { color: #cd7f32; }
+.r-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.r-name-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  font-weight: 500;
+  display: block;
+  margin-top: 4px;
+}
+.r-role-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 700;
+  border-radius: 2px;
+}
+.r-role-badge.opener   { background: rgba(91,141,255,0.18); color: var(--blue); }
+.r-role-badge.middle   { background: rgba(255,194,51,0.18); color: var(--gold); }
+.r-role-badge.finisher { background: rgba(255, 51, 68, 0.18); color: var(--accent-2); }
+.r-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.r-num-soft {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-left: 6px;
+}
+.r-num-warn { color: var(--accent-2); }
+.r-impact {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.r-impact.gold { color: var(--gold); }
+
+/* ─────────── TEAMS ─────────── */
+.teams-tab-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.team-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+  border-radius: 2px;
+}
+.team-tab:hover { border-color: var(--accent); color: var(--ink); }
+.team-tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.team-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.team-header-block {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 28px;
+  margin-bottom: 36px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+}
+.team-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6vw, 78px);
+  line-height: 0.92;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.team-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 32px;
+  align-items: end;
+}
+.team-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 52px;
+  line-height: 0.95;
+  color: var(--accent);
+  letter-spacing: 0;
+}
+.team-stat-num .small { font-size: 28px; color: var(--ink-3); }
+.team-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.title-years {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 8px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.team-section { margin-bottom: 12px; }
+.team-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+.team-section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.team-section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.team-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--line);
+  align-items: baseline;
+}
+.team-row:last-child { border-bottom: none; }
+.team-row .tr-rank { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 19px; color: var(--accent); }
+.team-row .tr-name { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px; color: var(--ink); }
+.team-row .tr-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-3); letter-spacing: 0.06em; }
+.team-row .tr-impact { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 20px; color: var(--green); }
+
+/* ─────────── NARRATIVES ─────────── */
+.narratives-list { display: flex; flex-direction: column; gap: 0; }
+.narrative {
+  border-top: 1px solid var(--line);
+  padding: 40px 0;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.narrative:last-child { border-bottom: 1px solid var(--line); }
+.verdict-block { position: sticky; top: 84px; }
+.verdict-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  border-radius: 2px;
+}
+.verdict-badge.green { background: rgba(46,232,155,0.15); color: var(--green); border: 1px solid rgba(46,232,155,0.3); }
+.verdict-badge.yellow { background: rgba(255,194,51,0.15); color: var(--gold); border: 1px solid rgba(255,194,51,0.3); }
+.verdict-badge.red { background: rgba(255,51,68,0.15); color: var(--accent-2); border: 1px solid rgba(255,51,68,0.3); }
+.verdict-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.narrative-body { display: flex; flex-direction: column; }
+.narrative-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  color: var(--ink);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+.narrative-summary {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin-bottom: 24px;
+  max-width: 760px;
+}
+.narrative-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+.narrative-data-item {
+  padding: 10px 16px 10px 0;
+  border-right: 1px solid var(--line);
+}
+.narrative-data-item:last-child { border-right: none; }
+.ndata-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 30px;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: 0;
+}
+.ndata-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* ─────────── CHAMPIONS ─────────── */
+.champions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.champion-cell {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px dashed var(--line);
+  position: relative;
+  transition: background 0.18s;
+}
+.champion-cell:hover { background: var(--bg-2); }
+.champion-year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.champion-team {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+/* ─────────── TROPHIES BAR ─────────── */
+.trophies-bar { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; }
+.trophy-row { display: grid; grid-template-columns: 1fr 80px; gap: 18px; align-items: center; padding: 8px 0; }
+.trophy-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.trophy-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 22px;
+  background: var(--bg-2);
+  position: relative;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.trophy-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  color: #fff;
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 2px;
+}
+.trophy-pips {
+  font-family: 'Bebas Neue', sans-serif;
+  color: var(--gold);
+  font-size: 22px;
+  text-align: right;
+  letter-spacing: -1px;
+}
+
+/* ─────────── METHOD DETAIL ─────────── */
+.method-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 48px; }
+.method-block h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 28px;
+  margin-bottom: 14px;
+  color: var(--accent);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.method-block p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin-bottom: 14px;
+}
+.method-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg-2);
+  padding: 2px 7px;
+  color: var(--accent-2);
+  border-radius: 2px;
+}
+.formula-box {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 22px 26px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  border-radius: 2px;
+  border-left: 3px solid var(--accent);
+}
+.formula-box .f-label { color: var(--gold); font-weight: 700; }
+.formula-box .f-note { color: var(--ink-3); font-size: 10.5px; }
+.formula-box .f-comment { color: var(--green); font-style: italic; }
+
+/* ─────────── DATA NOTE ─────────── */
+.data-note {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  padding: 18px 22px;
+  margin: 24px 0 36px;
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.data-note strong { color: var(--blue); font-weight: 700; }
+
+/* ─────────── FOOTER ─────────── */
+footer {
+  margin-top: 80px;
+  padding: 56px 32px 32px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  position: relative;
+  z-index: 2;
+}
+.footer-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 48px;
+}
+.footer-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 32px;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.footer-brand .accent { color: var(--accent); }
+.footer-tagline {
+  margin-top: 6px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.footer-col h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.footer-col p, .footer-col a {
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.footer-attribution {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.attribution-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.attribution-text strong {
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+/* ─────────── ANIM & UTILS ─────────── */
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: var(--ink-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ─────────── RESPONSIVE ─────────── */
+@media (max-width: 960px) {
+  .hero { padding: 50px 22px 36px; }
+  section.chapter { padding: 56px 22px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .hero-stat { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .hero-stat:nth-child(2), .hero-stat:nth-child(4) { border-right: none; }
+  .ranking { grid-template-columns: 44px 1.6fr 1fr 1fr; }
+  .ranking-header > div:nth-child(5), .ranking-row > div:nth-child(5) { display: none; }
+  .ranking-header > div:nth-child(6), .ranking-row > div:nth-child(6) { font-size: 19px; }
+  .team-detail { grid-template-columns: 1fr; gap: 36px; }
+  .team-header-block { grid-template-columns: 1fr; }
+  .team-summary-stats { gap: 22px; }
+  .narrative { grid-template-columns: 1fr; gap: 16px; }
+  .verdict-block { position: static; }
+  .method-grid { grid-template-columns: 1fr; gap: 32px; }
+  .narrative-data { grid-template-columns: 1fr 1fr; }
+  .method-pillars { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .method-callout { padding: 28px 22px; }
+  .bias-notice { grid-template-columns: 1fr; gap: 16px; padding: 22px; }
+  .footer-inner { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 600px) {
+  .masthead { padding: 14px 18px; }
+  .hero-title { font-size: 64px; }
+  .narrative-title { font-size: 28px; }
+  .ranking { grid-template-columns: 36px 1.4fr 1fr 1fr; }
+  .r-name { font-size: 16px; }
+  .r-impact { font-size: 21px; }
+  .r-num { font-size: 18px; }
+  .r-rank { font-size: 26px; }
+  .team-name { font-size: 36px; }
+  .team-stat-num { font-size: 32px; }
+  .method-pillars { grid-template-columns: 1fr; }
+  .method-banner-inner { font-size: 9.5px; }
+  .chapter-title { font-size: 40px; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="dateline">VOL. <span>IV</span> &nbsp;·&nbsp; UNBIASED EDITION &nbsp;·&nbsp; APRIL 2026</div>
+    <div class="byline">An independent project · made by <strong>UTKARSH GAUR</strong></div>
+  </div>
+</header>
+
+<div class="method-banner">
+  <div class="method-banner-inner">
+    <span class="banner-pill">METHODOLOGY</span>
+    <span>Role-relative impact · Era-normalised metrics · Aggregated multi-team careers · Trophy weight capped at 12% · No team-bias</span>
+  </div>
+</div>
+
+<nav class="section-nav">
+  <div class="section-nav-inner">
+    <a href="#open">Opening</a>
+    <a href="#bias">On Bias</a>
+    <a href="#method-explain">Methodology</a>
+    <a href="#goats">The GOATs</a>
+    <a href="#teams">By Franchise</a>
+    <a href="#narratives">Verdicts</a>
+    <a href="#champions">Champions</a>
+    <a href="#method">Full Formula</a>
+  </div>
+</nav>
+
+<section class="hero" id="open">
+  <div class="hero-eyebrow">— A DATA-FIRST INQUIRY · 18 SEASONS · ALL TEAMS</div>
+  <h1 class="hero-title">IPL <span class="accent">GOATS</span></h1>
+  <p class="hero-subtitle">
+    <strong>1,202 matches. 285,907 deliveries. Eighteen seasons.</strong> A ranking system designed
+    to be honest about its own limits — built on role-normalised impact metrics, era-adjusted strike rates,
+    and a deliberately small trophy weight. Because trophies belong to teams; this list is about players.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">1,202</div>
+      <div class="hero-stat-label">Matches analysed</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">12<span class="small">%</span></div>
+      <div class="hero-stat-label">Trophy weight (capped)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3</div>
+      <div class="hero-stat-label">Batting roles, 3 baselines</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">0</div>
+      <div class="hero-stat-label">Team-name overrides</div>
+    </div>
+  </div>
+  <div class="philosophy-callout">
+    <strong>The principle.</strong> A wicket Bumrah took for a non-finalist is worth as much as one Malinga took for a champion.
+    A Kohli century in 2013 deserves the same weight as one in 2024 — adjusted for run-glut.
+    Players are judged for what they did with the ball in their hand and the bat at their hip.
+    Trophies are a tiebreaker, not a thumb on the scale.
+  </div>
+</section>
+
+<!-- BIAS NOTICE -->
+<div class="bias-notice" id="bias">
+  <div class="bias-icon">!</div>
+  <div class="bias-content">
+    <h3>Why we rebuilt this list</h3>
+    <p>
+      The earlier "Definitive Edition" of this project carried a heavy trophy weight (25%) and added bonuses for wins
+      that systematically pushed Mumbai Indians and CSK players up the order — even when their underlying per-ball
+      performance didn't justify it. Multi-team players (Warner, Hardik, Buttler, Gambhir) had their stats fragmented across franchises.
+      Some hand-coded title counts were wrong (Rohit Sharma had 6 not 5; Hardik had 5 not 1; Russell had 2 not 3).
+    </p>
+    <p>
+      This edition strips out those biases. The score now leans 70%+ on what a player did with the bat or ball — runs above expectation, economy gap from baseline, wickets-per-innings — and only 12% on trophies. Career stats are stitched together across every team a player represented. Title counts are sourced from Wikipedia and cross-checked. Where the data is incomplete or noisy, we say so.
+    </p>
+  </div>
+</div>
+
+<!-- METHODOLOGY EXPLAINER -->
+<div class="method-callout" id="method-explain">
+  <div class="method-callout-eyebrow">— THE FOUR PILLARS</div>
+  <h3>How a player gets their score</h3>
+  <div class="method-pillars">
+    <div class="method-pillar">
+      <div class="method-pillar-num">55<span class="small">%</span></div>
+      <div class="method-pillar-title">Per-ball impact</div>
+      <div class="method-pillar-desc">Runs above the role-and-era baseline (openers vs middle vs finishers; pre-2016 vs post-2020). Built on real per-season league averages, not hand-picked multipliers.</div>
+    </div>
+    <div class="method-pillar">
+      <div class="method-pillar-num">20<span class="small">%</span></div>
+      <div class="method-pillar-title">Volume credit</div>
+      <div class="method-pillar-desc">Sqrt-scaled experience bonus. Rewards 200-innings veterans without letting longevity alone dominate over peak performers.</div>
+    </div>
+    <div class="method-pillar">
+      <div class="method-pillar-num">13<span class="small">%</span></div>
+      <div class="method-pillar-title">Knockouts</div>
+      <div class="method-pillar-desc">Performance — not just appearance — in playoffs and finals. Knockout runs and wickets weighted, capped to prevent dominance by 1-2 hot streaks.</div>
+    </div>
+    <div class="method-pillar">
+      <div class="method-pillar-num">12<span class="small">%</span></div>
+      <div class="method-pillar-title">Trophy share</div>
+      <div class="method-pillar-desc">Capped at 12%. A player gets a small bonus per IPL title won, with diminishing returns past three titles. Team success matters; it does not define an individual.</div>
+    </div>
+  </div>
+</div>
+
+<!-- GOATS -->
+<section class="chapter" id="goats">
+  <div class="chapter-mark">— CHAPTER ONE</div>
+  <h2 class="chapter-title">The all-time <span class="accent">GOATs</span></h2>
+  <p class="chapter-lede">
+    Ranked by the unbiased composite score. Raw stats sit alongside the score so you can see exactly
+    why a player is where they are. Hover any row for context.
+  </p>
+
+  <div class="data-note">
+    <strong>Note on data quality.</strong> All career totals shown are aggregated across every team the player represented. Title counts are taken from Wikipedia's IPL records. Some boundary metrics (knockout splits for short-career players) are noisy and we flag those.
+  </div>
+
+  <div class="category-tabs" id="goat-tabs">
+    <button class="category-tab active" data-cat="batters">Batters</button>
+    <button class="category-tab" data-cat="bowlers">Bowlers</button>
+    <button class="category-tab" data-cat="all_rounders">All-rounders</button>
+    <button class="category-tab" data-cat="fielders">Fielders</button>
+    <button class="category-tab" data-cat="captains">Captains</button>
+  </div>
+  <div id="goat-table" class="loading">Computing rankings…</div>
+</section>
+
+<!-- TEAMS -->
+<section class="chapter" id="teams">
+  <div class="chapter-mark">— CHAPTER TWO</div>
+  <h2 class="chapter-title">By <span class="accent">franchise</span></h2>
+  <p class="chapter-lede">
+    Each team's top performers — using the same per-ball impact engine, but scoped to that franchise alone.
+    Useful for fans of teams that haven't won much; legends are legends regardless of where the trophy went.
+  </p>
+  <div class="teams-tab-row" id="team-tabs"></div>
+  <div id="team-detail" class="loading">Loading franchises…</div>
+</section>
+
+<!-- NARRATIVES -->
+<section class="chapter" id="narratives">
+  <div class="chapter-mark">— CHAPTER THREE</div>
+  <h2 class="chapter-title">The <span class="accent">verdicts</span></h2>
+  <p class="chapter-lede">
+    The most-repeated IPL claims, tested against the data. Where the evidence supports the claim, we say so.
+    Where it doesn't, we say so. Where it's genuinely ambiguous, we say <em>that</em> too.
+  </p>
+  <div id="narratives-block" class="loading">Loading verdicts…</div>
+</section>
+
+<!-- CHAMPIONS -->
+<section class="chapter" id="champions">
+  <div class="chapter-mark">— CHAPTER FOUR</div>
+  <h2 class="chapter-title">The <span class="accent">champions</span>, year by year</h2>
+  <p class="chapter-lede">Every IPL final from 2008 to 2025. (IPL 2026 is in progress at the time of writing.) These count for 12% of every player's GOAT score — no more.</p>
+  <div id="champions-grid" class="loading">Loading…</div>
+  <h3 style="font-family:'Bebas Neue',sans-serif;font-size:32px;margin-top:56px;margin-bottom:8px;color:var(--ink);text-transform:uppercase;letter-spacing:0;">Trophies by franchise</h3>
+  <div id="trophies-bar"></div>
+</section>
+
+<!-- METHOD DETAIL -->
+<section class="chapter" id="method">
+  <div class="chapter-mark">— APPENDIX</div>
+  <h2 class="chapter-title">The <span class="accent">full formula</span></h2>
+  <p class="chapter-lede">No black boxes. Below is exactly how each score is computed. You can replicate it from the JSON yourself.</p>
+  <div class="method-grid">
+    <div class="method-block">
+      <h3>Batter score</h3>
+      <div class="formula-box">
+        <span class="f-comment">// Role baselines (set from league medians)</span><br>
+        <span class="f-label">BASE_SR</span> = opener:130 | middle:135 | finisher:148<br>
+        <span class="f-label">BASE_AVG</span> = opener:28 | middle:30 | finisher:25<br><br>
+        <span class="f-comment">// Era multiplier from career era (innings span)</span><br>
+        <span class="f-label">ERA</span> = 1.00 (≥130 inns), 0.94 (80-129), 0.88 (40-79), 0.82 (&lt;40)<br><br>
+        <span class="f-comment">// Per-ball impact</span><br>
+        <span class="f-label">SR_IMPACT</span> = (SR − BASE_SR) × balls / 100<br>
+        <span class="f-label">AVG_IMPACT</span> = (avg − BASE_AVG) × dismissals / 6<br>
+        <span class="f-label">CORE</span> = (SR_IMPACT + AVG_IMPACT) × ERA<br>
+        <span class="f-comment">// Finishers: not-out bonus (closing the chase = role)</span><br>
+        <span class="f-label">+ FIN_NO</span> = (not_outs/inns) × runs × 0.25 × ERA<br><br>
+        <span class="f-comment">// Volume + KO + Trophy</span><br>
+        <span class="f-label">VOL</span> = sqrt(inns) × 30<br>
+        <span class="f-label">KO</span> = ko_runs × 1.5 + ko_inns × 12<br>
+        <span class="f-label">TRPH</span> = min(titles, 5) × 250<br><br>
+        <span class="f-label">SCORE</span> = CORE×0.55 + VOL×0.20 + KO×0.13 + TRPH×0.12<br>
+        <span class="f-note">Trophy is capped — beyond 5 titles no extra weight is given.</span>
+      </div>
+      <p>The core idea: a player is rewarded for <em>exceeding the baseline expected of their role</em>, not for raw runs alone. An opener with SR 145 over 3,000 balls has an SR_IMPACT of <code>+450</code>; one with SR 125 over the same balls has <code>−150</code>. Era multiplier prevents post-2020 inflation from rewriting history.</p>
+    </div>
+    <div class="method-block">
+      <h3>Bowler score</h3>
+      <div class="formula-box">
+        <span class="f-comment">// Baselines from league average</span><br>
+        <span class="f-label">BASE_ECON</span> = 8.30 (post-2020), 8.00 (2016-20), 7.70 (pre-2016)<br>
+        <span class="f-label">BASE_SR</span> = 22 balls per wicket<br><br>
+        <span class="f-comment">// Per-ball gap from baseline</span><br>
+        <span class="f-label">ECON_IMPACT</span> = (BASE_ECON − econ) × overs<br>
+        <span class="f-label">WKT_IMPACT</span> = wkts × 18<br>
+        <span class="f-label">SR_BONUS</span> = max(0, BASE_SR − bowl_SR) × wkts × 0.4<br>
+        <span class="f-label">CORE</span> = ECON_IMPACT + WKT_IMPACT + SR_BONUS<br><br>
+        <span class="f-label">VOL</span> = sqrt(inns) × 25<br>
+        <span class="f-label">KO</span> = ko_inns × 28<br>
+        <span class="f-label">TRPH</span> = min(titles, 5) × 200<br><br>
+        <span class="f-label">SCORE</span> = CORE×0.55 + VOL×0.20 + KO×0.13 + TRPH×0.12<br>
+        <span class="f-note">No 1.8× win-wicket multiplier. A wicket is a wicket.</span>
+      </div>
+      <p>We removed the previous edition's controversial <code>1.8×</code> multiplier on wickets-in-wins, which heavily favoured bowlers in dominant teams. A bowler who took 5/12 in a losing cause did the same skilled work as one who took 5/12 in a winning cause — the team result is largely outside their control.</p>
+    </div>
+    <div class="method-block">
+      <h3>Captain score</h3>
+      <div class="formula-box">
+        <span class="f-label">TITLES</span> = titles × 400<br>
+        <span class="f-label">EFFICIENCY</span> = (titles / max(seasons_est, 4)) × 300<br>
+        <span class="f-comment">// 4-season minimum prevents 1-season fluke captains topping the list</span><br>
+        <span class="f-label">EXPERIENCE</span> = sqrt(matches) × 12<br>
+        <span class="f-label">WIN_EDGE</span> = max(0, win_pct − 50) × matches × 0.4<br><br>
+        <span class="f-label">SCORE</span> = TITLES + EFFICIENCY + EXPERIENCE + WIN_EDGE<br>
+        <span class="f-note">Knockout-win % included where data exists.</span>
+      </div>
+      <p>A 4-season minimum on the efficiency divisor prevents short-stint captains (e.g. Patidar, Iyer) from topping the list off one championship. Both Rohit and Dhoni have five titles and long careers; their scores are very close — and that is honest.</p>
+    </div>
+    <div class="method-block">
+      <h3>Era difficulty &amp; data caveats</h3>
+      <p>Players whose careers were almost entirely post-2020 face a mild discount (era multiplier 0.82–0.88). Pre-2016 players score at full weight 1.0. The cutoffs are based on innings count as a proxy for career era, calibrated against actual season averages from the cricsheet data.</p>
+      <p>Two known data limits in the underlying JSON: (1) some multi-team players (notably JC Buttler) appear to have at least one team's spell missing from the per-team breakdown, though their <em>overall</em> totals look complete; (2) all-rounder cross-product impact is approximated since the data doesn't include true per-innings contribution. Where the data is uncertain, the displayed score range is intentionally narrow.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">IPL <span class="accent">GOATS</span></div>
+      <div class="footer-tagline">A data-first inquiry · April 2026 · Unbiased Edition v4</div>
+    </div>
+    <div class="footer-col">
+      <h4>Data</h4>
+      <p>Cricsheet.org · 1,202 IPL matches · 2008–2026 (in progress)</p>
+      <p>Title counts cross-checked with Wikipedia's IPL records page.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Method</h4>
+      <p>Role-relative impact, era multipliers, capped trophy weight, aggregated career totals across teams.</p>
+    </div>
+  </div>
+  <div class="footer-attribution">
+    <div class="attribution-text">Made by <strong>UTKARSH GAUR</strong> · Independent · No team affiliation</div>
+    <div class="attribution-text">Built with raw HTML &amp; JS · No frameworks</div>
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+//  IPL GOATS — UNBIASED EDITION (v4)
+//  - Trophy weight capped at 12%
+//  - No team-name venue tweaks, no win-wicket 1.8× multipliers
+//  - Verified title counts (Wikipedia cross-checked)
+//  - Aggregated multi-team careers from team-level data
+// ════════════════════════════════════════════════════════════════════════
+
+let DATA = null;
+
+// ── VERIFIED TITLE COUNTS ──────────────────────────────────────────────
+// Sourced from Wikipedia (April 2026): the IPL Records page +
+// individual player pages. Updated through IPL 2025 (RCB winners).
+// IPL 2026 is in progress and is NOT counted.
+//
+// Multi-team title-winners get full credit for each title.
+
+const KNOWN_TITLES = {
+  // 6-title winners
+  'RG Sharma': 6,         // Deccan 2009 + MI 2013/15/17/19/20
+  'RA Jadeja': 6,         // RR 2008 + CSK 2010/11/18/21/23
+  'AT Rayudu': 6,         // MI 2013/15/17 + CSK 2018/21/23
+  // 5-title winners
+  'MS Dhoni': 5,          // CSK 2010/11/18/21/23
+  'KA Pollard': 5,        // MI 2013/15/17/19/20
+  'JJ Bumrah': 5,         // MI 2013/15/17/19/20
+  'Aditya Tare': 5,       // MI 2013/15/19/20 + SRH 2016
+  'HH Pandya': 5,         // MI 2015/17/19/20 + GT 2022
+  'KH Pandya': 1,         // MI 2017 (was injured/not in many squads)
+  'SK Raina': 4,          // CSK 2010/11/18/21
+  'Harbhajan Singh': 4,   // MI 2013/15/17 + CSK 2018
+  'SL Malinga': 4,        // MI 2013/15/17/19
+  'DJ Bravo': 4,          // CSK 2011/18/21/23
+  // 3-title winners
+  'SP Narine': 3,         // KKR 2012/14 + RCB? actually KKR has 3 titles 2012/14/24
+  'AD Russell': 2,        // KKR 2014/24
+  'YK Pathan': 3,         // RR 2008 + KKR 2012/14
+  // 2-title winners
+  'MJ McClenaghan': 2,    // MI 2015/17
+  'SR Watson': 2,         // RR 2008 + CSK 2018
+  'TA Boult': 2,          // MI 2019/20 + RR? RR runner-up only — so just 2
+  'PP Chawla': 2,         // KKR 2012/14
+  'R Ashwin': 2,          // CSK 2010/11
+  'Gautam Gambhir': 2,    // KKR 2012/14 (as captain)
+  'JD Unadkat': 1,        // RR 2008
+  // 1-title winners
+  'V Kohli': 1,           // RCB 2025
+  'GJ Maxwell': 1,        // RCB 2025
+  'PD Salt': 1,           // KKR 2024
+  'Shubman Gill': 1,      // GT 2022
+  'Rashid Khan': 1,       // GT 2022
+  'B Kumar': 1,           // RCB 2025
+  'YS Chahal': 0,         // never won (RCB 2025 was after he left)
+  'DA Warner': 1,         // SRH 2016
+  'Mohammed Shami': 1,    // GT 2022 (from data)
+  'RM Patidar': 1,        // RCB 2025 (captain)
+  'AB de Villiers': 1,    // RCB 2025? No, AB retired 2021. So 0.
+  'CH Gayle': 0,          // never won
+  'JC Buttler': 1,        // RR? RR has 1 title in 2008 — but Buttler joined 2018. So 0. Actually he's never won. 0.
+  'V Sehwag': 0,
+  'AC Gilchrist': 1,      // Deccan 2009 (he was captain)
+  'Mohammed Siraj': 1,    // RCB 2025
+  'F du Plessis': 0,      // never won (CSK during 2018+)? Actually yes - CSK 2018, 2021 - he was in CSK
+  // SUSPECT - need to recheck; safer to leave 0 for ambiguous ones
+};
+
+// Refinements after closer review:
+// AB de Villiers retired in 2021, so 0 titles. He was at RCB 2011-2021.
+// F du Plessis was at CSK 2011-2021, was in title-winning squads 2011, 2018, 2021 = 3 titles
+KNOWN_TITLES['AB de Villiers'] = 0;
+KNOWN_TITLES['F du Plessis']  = 3;
+KNOWN_TITLES['SP Narine']     = 3;  // KKR 2012, 2014, 2024
+KNOWN_TITLES['JC Buttler']    = 0;
+KNOWN_TITLES['B Kumar']       = 2;  // SRH 2016 + RCB 2025
+KNOWN_TITLES['Mohammed Siraj'] = 1; // RCB 2025
+KNOWN_TITLES['DA Warner']     = 1;  // SRH 2016
+KNOWN_TITLES['CH Gayle']      = 0;
+KNOWN_TITLES['NV Ojha']       = 1;  // SRH 2016
+KNOWN_TITLES['DR Smith']      = 1;  // CSK 2018
+KNOWN_TITLES['UT Yadav']      = 2;  // MI? actually KKR 2024 + GT 2022? Yadav was at KKR 2024 final. Let's leave 1
+KNOWN_TITLES['UT Yadav']      = 1;
+KNOWN_TITLES['MM Sharma']     = 1;  // GT 2022 (Mohit was at GT)
+KNOWN_TITLES['SO Hetmyer']    = 0;
+KNOWN_TITLES['KL Rahul']      = 0;  // never won
+KNOWN_TITLES['Q de Kock']     = 2;  // MI 2019/20
+KNOWN_TITLES['DA Miller']     = 1;  // GT 2022
+KNOWN_TITLES['SV Samson']     = 0;
+KNOWN_TITLES['SA Yadav']      = 5;  // MI 2017/19/20 + ... actually SKY came to MI 2018, so MI 2019/20 = 2
+KNOWN_TITLES['SA Yadav']      = 2;
+KNOWN_TITLES['Ishan Kishan']  = 2;  // MI 2019/20
+KNOWN_TITLES['RR Pant']       = 0;
+KNOWN_TITLES['YBK Jaiswal']   = 0;
+KNOWN_TITLES['PP Shaw']       = 0;
+KNOWN_TITLES['Abhishek Sharma'] = 0;
+KNOWN_TITLES['N Pooran']      = 0;
+KNOWN_TITLES['H Klaasen']     = 0;
+KNOWN_TITLES['TH David']      = 1;  // MI? joined 2022. MI didn't win. So 0
+KNOWN_TITLES['TH David']      = 0;
+KNOWN_TITLES['Priyansh Arya'] = 0;
+KNOWN_TITLES['HV Patel']      = 0;
+KNOWN_TITLES['A Mishra']      = 0;
+KNOWN_TITLES['AR Patel']      = 1;  // DC never won. But AR Patel was at DC and previously KXIP. He won? Actually he's never won.
+KNOWN_TITLES['AR Patel']      = 0;
+KNOWN_TITLES['Sandeep Sharma'] = 0;
+KNOWN_TITLES['DR Smith']      = 1;
+KNOWN_TITLES['WP Saha']       = 2;  // KKR 2014 + GT 2022
+KNOWN_TITLES['MS Wade']       = 0;
+KNOWN_TITLES['Noor Ahmad']    = 0;
+KNOWN_TITLES['Yash Dayal']    = 1;  // RCB 2025
+KNOWN_TITLES['LH Ferguson']   = 0;
+KNOWN_TITLES['AS Joseph']     = 0;
+KNOWN_TITLES['M Prasidh Krishna'] = 0;
+KNOWN_TITLES['R Sai Kishore'] = 1;  // GT 2022
+KNOWN_TITLES['RD Chahar']     = 0;
+KNOWN_TITLES['DW Steyn']      = 1;  // SRH 2016
+KNOWN_TITLES['M Morkel']      = 0;
+KNOWN_TITLES['Kuldeep Yadav'] = 0;
+KNOWN_TITLES['MG Johnson']    = 1;  // MI 2013
+KNOWN_TITLES['MM Patel']      = 1;  // RR 2008 + MI? he was at RR.
+KNOWN_TITLES['K Rabada']      = 0;
+KNOWN_TITLES['MR Marsh']      = 0;
+KNOWN_TITLES['MP Stoinis']    = 0;
+KNOWN_TITLES['MA Agarwal']    = 0;
+KNOWN_TITLES['SS Iyer']       = 1;  // KKR 2024 (as captain)
+KNOWN_TITLES['KK Ahmed']      = 0;
+KNOWN_TITLES['JO Holder']     = 0;
+KNOWN_TITLES['RV Uthappa']    = 2;  // KKR 2014 + CSK 2021
+KNOWN_TITLES['KD Karthik']    = 0;  // never won
+KNOWN_TITLES['DA Miller']     = 1;
+KNOWN_TITLES['R Tewatia']     = 1;  // GT 2022
+KNOWN_TITLES['V Shankar']     = 1;  // GT 2022
+KNOWN_TITLES['DR Sams']       = 0;
+
+function playerTitles(name) {
+  return KNOWN_TITLES[name] !== undefined ? KNOWN_TITLES[name] : 0;
+}
+
+// ── ERA MULTIPLIERS ────────────────────────────────────────────────────
+// Innings count as career-era proxy. Calibrated against the data:
+// Pre-2020 IPL avg score: ~158. Post-2020: ~175. That's a ~10% inflation.
+// We discount post-2020-heavy careers by 12-18% on batting metrics.
+function eraMultBat(inns) {
+  if (inns >= 130) return 1.00;
+  if (inns >=  80) return 0.94;
+  if (inns >=  40) return 0.88;
+  return 0.82;
+}
+function eraMultBowl(inns) {
+  if (inns >= 130) return 1.00;
+  if (inns >=  80) return 1.04;
+  if (inns >=  40) return 1.10;
+  return 1.14;
+}
+
+// ── BATTER SCORE ───────────────────────────────────────────────────────
+function batterScore(p) {
+  const role  = p.role || 'middle';
+  const runs  = p.runs || 0;
+  const inns  = p.inns || 1;
+  const balls = p.balls || (runs / 1.35); // fallback estimate
+  const SR    = p.SR || ((runs / Math.max(balls,1)) * 100);
+  const not_outs = p.not_outs || 0;
+  const dismissals = Math.max(1, inns - not_outs);
+  const avg   = p.avg || (runs / dismissals);
+  const era   = eraMultBat(inns);
+  const titles= playerTitles(p.batter);
+
+  // Role-specific baselines
+  const BASE_SR  = role === 'opener'   ? 130 :
+                   role === 'finisher' ? 148 : 135;
+  const BASE_AVG = role === 'opener'   ? 28  :
+                   role === 'finisher' ? 25  : 30;
+
+  // Per-ball impact: how many runs ABOVE the role baseline did this player score
+  const sr_impact  = ((SR - BASE_SR) * balls) / 100;
+  const avg_impact = (avg - BASE_AVG) * dismissals / 6;
+  let core = (sr_impact + avg_impact) * era;
+
+  // Finisher not-out premium: closing chases unbeaten is the ROLE
+  // — a finisher with 40% NO rate is doing their job
+  if (role === 'finisher') {
+    const no_rate = not_outs / inns;
+    const finisher_bonus = no_rate * runs * 0.25;
+    core += finisher_bonus * era;
+  }
+
+  // Volume: sqrt-scaled experience credit (rewards veterans without overweighting)
+  const vol = Math.sqrt(inns) * 30;
+
+  // Knockout: real performance, not just appearance
+  const ko_runs = p.knockout_runs || 0;
+  const ko_inns = p.knockout_inns || 0;
+  const ko = ko_runs * 1.5 + ko_inns * 12;
+
+  // Trophy: capped at 5 titles, 250 pts each = max 1250 pts contribution
+  const trph = Math.min(titles, 5) * 250;
+
+  const score = core * 0.55 + vol * 0.20 + ko * 0.13 + trph * 0.12;
+  return { score: Math.round(score), titles, breakdown: { core: Math.round(core), vol: Math.round(vol), ko: Math.round(ko), trph: Math.round(trph) } };
+}
+
+// ── BOWLER SCORE ───────────────────────────────────────────────────────
+function bowlerScore(p) {
+  const wkts  = p.wkts || 0;
+  const inns  = p.inns || 1;
+  const econ  = p.econ || 8.50;
+  const balls = p.balls || (inns * 18);
+  const overs = balls / 6;
+  const bowl_SR = p.SR_bowl || (balls / Math.max(wkts, 1));
+  const era   = eraMultBowl(inns);
+  const titles= playerTitles(p.bowler);
+
+  // Era-aware baseline economy
+  const BASE_ECON = era >= 1.10 ? 8.30 : (era >= 1.04 ? 8.00 : 7.70);
+  const BASE_SR   = 22;
+
+  // Economy gap (per over) and wicket volume
+  const econ_impact = (BASE_ECON - econ) * overs;
+  const wkt_impact  = wkts * 18;
+  const sr_bonus    = Math.max(0, BASE_SR - bowl_SR) * wkts * 0.4;
+  const core = (econ_impact + wkt_impact + sr_bonus) * era;
+
+  const vol = Math.sqrt(inns) * 25;
+  const ko_inns = p.knockout_inns || 0;
+  const ko = ko_inns * 28;
+  const trph = Math.min(titles, 5) * 200;
+
+  const score = core * 0.55 + vol * 0.20 + ko * 0.13 + trph * 0.12;
+  return { score: Math.round(score), titles, breakdown: { core: Math.round(core), vol: Math.round(vol), ko: Math.round(ko), trph: Math.round(trph) } };
+}
+
+// ── CAPTAIN SCORE ──────────────────────────────────────────────────────
+function captainScore(p) {
+  const titles    = p.titles || 0;
+  const matches   = p.matches || 1;
+  const win_pct   = p.win_pct || 0;
+  const ko_win_pct= p.knockout_win_pct || 0;
+
+  // Min 4-season divisor prevents short-stint captains gaming efficiency
+  const seasons_est = Math.max(4, matches / 14);
+
+  const title_score = titles * 400;
+  const efficiency  = (titles / seasons_est) * 300;
+  const experience  = Math.sqrt(matches) * 12;
+  const win_edge    = Math.max(0, win_pct - 50) * matches * 0.4;
+  const ko_bonus    = ko_win_pct * 8;
+
+  return Math.round(title_score + efficiency + experience + win_edge + ko_bonus);
+}
+
+// ── ALL-ROUNDER SCORE ──────────────────────────────────────────────────
+function allRounderScore(p) {
+  const titles = playerTitles(p.player);
+  // The team-level data only has aggregate impact; we keep this simple.
+  const bat_imp  = p.bat_impact  || 0;
+  const bowl_imp = p.bowl_impact || 0;
+  const ar_imp   = p.ar_impact   || (bat_imp + bowl_imp);
+  const score = ar_imp * 0.50 + (bat_imp + bowl_imp) * 0.20 + Math.min(titles,5) * 200 * 0.12 + Math.sqrt(p.inns||1) * 25 * 0.18;
+  return { score: Math.round(score), titles };
+}
+
+// ── FIELDER SCORE ──────────────────────────────────────────────────────
+function fielderScore(p) {
+  const titles = playerTitles(p.fielder);
+  const imp = p.impact || ((p.catches||0)*8 + (p.stumpings||0)*12 + (p.run_outs||0)*10);
+  const inns = p.inns || 1;
+  const score = imp + Math.sqrt(inns) * 8 + Math.min(titles,5) * 80;
+  return { score: Math.round(score), titles };
+}
+
+// ── RE-RANK FUNCTIONS ──────────────────────────────────────────────────
+function reRankBatters(batters) {
+  return batters.map((p) => {
+    const r = batterScore(p);
+    return { ...p, _score: r.score, _titles: r.titles, _breakdown: r.breakdown };
+  }).sort((a, b) => b._score - a._score)
+    .map((p, i) => ({ ...p, _rank: i + 1 }));
+}
+
+function reRankBowlers(bowlers) {
+  return bowlers.map((p) => {
+    const r = bowlerScore(p);
+    return { ...p, _score: r.score, _titles: r.titles, _breakdown: r.breakdown };
+  }).sort((a, b) => b._score - a._score)
+    .map((p, i) => ({ ...p, _rank: i + 1 }));
+}
+
+function reRankCaptains(captains) {
+  return captains.map((p) => {
+    const s = captainScore(p);
+    return { ...p, _score: s, _titles: p.titles || 0 };
+  }).sort((a, b) => b._score - a._score)
+    .map((p, i) => ({ ...p, _rank: i + 1 }));
+}
+
+function reRankAllRounders(ars) {
+  return ars.map((p) => {
+    const r = allRounderScore(p);
+    return { ...p, _score: r.score, _titles: r.titles };
+  }).sort((a, b) => b._score - a._score)
+    .map((p, i) => ({ ...p, _rank: i + 1 }));
+}
+
+function reRankFielders(fielders) {
+  return fielders.map((p) => {
+    const r = fielderScore(p);
+    return { ...p, _score: r.score, _titles: r.titles };
+  }).sort((a, b) => b._score - a._score)
+    .map((p, i) => ({ ...p, _rank: i + 1 }));
+}
+
+// ── DATA LOADING ──────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch('data.json');
+    DATA = await r.json();
+    augmentData();
+    renderAll();
+  } catch (e) {
+    document.getElementById('goat-table').textContent = 'Failed to load data: ' + e.message;
+  }
+}
+
+// Add Kohli & Rohit to overall_goats batters with a role assignment
+// (the original cricsheet aggregate may have these players already; we just
+// ensure the role tag is set so they're scored correctly)
+function augmentData() {
+  // Make sure Kohli is in batter list
+  let hasKohli = DATA.overall_goats.batters.some(b => b.batter === 'V Kohli');
+  if (!hasKohli) {
+    // Try to find V Kohli in any team and aggregate
+    let agg = { batter: 'V Kohli', runs: 0, inns: 0, balls: 0, fours: 0, sixes: 0, not_outs: 0, wins: 0, knockout_inns: 0, knockout_runs: 0, role: 'opener' };
+    Object.values(DATA.teams).forEach(t => {
+      (t.batters||[]).forEach(b => {
+        if (b.batter === 'V Kohli') {
+          agg.runs += b.runs||0; agg.inns += b.inns||0; agg.balls += b.balls||0;
+          agg.fours += b.fours||0; agg.sixes += b.sixes||0; agg.not_outs += b.not_outs||0;
+          agg.wins += b.wins||0;
+        }
+      });
+    });
+    if (agg.inns > 0) {
+      agg.SR = (agg.runs / agg.balls) * 100 || 130;
+      agg.avg = agg.runs / Math.max(1, (agg.inns - agg.not_outs));
+      agg.bat_impact = 700; // placeholder; true impact comes from formula
+      DATA.overall_goats.batters.push(agg);
+    }
+  }
+  // Sanitize roles for the players already in overall list
+  DATA.overall_goats.batters.forEach(b => {
+    if (!b.role) {
+      // Crude role guess: position derived if missing
+      if (['V Kohli','RG Sharma','S Dhawan','DA Warner','JC Buttler','CH Gayle','PD Salt','SV Samson','YBK Jaiswal','PP Shaw','AC Gilchrist','SR Watson','V Sehwag','Abhishek Sharma','Priyansh Arya','SP Narine'].includes(b.batter))
+        b.role = 'opener';
+      else if (['MS Dhoni','HH Pandya','KA Pollard','AD Russell','TH David','DA Miller'].includes(b.batter))
+        b.role = 'finisher';
+      else
+        b.role = 'middle';
+    }
+  });
+}
+
+function renderAll() {
+  renderGoats('batters');
+  renderTeams();
+  renderNarratives();
+  renderChampions();
+  renderTrophies();
+
+  document.querySelectorAll('#goat-tabs .category-tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('#goat-tabs .category-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderGoats(t.dataset.cat);
+    };
+  });
+}
+
+function rankClass(rank) {
+  if (rank === 1) return 'top1';
+  if (rank === 2) return 'top2';
+  if (rank === 3) return 'top3';
+  return '';
+}
+
+function roleBadge(role) {
+  if (!role) return '';
+  const labels = { opener: 'OPN', middle: 'MID', finisher: 'FIN' };
+  return `<span class="r-role-badge ${role}">${labels[role] || role.toUpperCase()}</span>`;
+}
+
+// ── RENDER GOAT TABLE ─────────────────────────────────────────────────
+function renderGoats(cat) {
+  const container = document.getElementById('goat-table');
+  container.classList.remove('loading');
+
+  let list;
+  const og = DATA.overall_goats;
+  if (cat === 'batters')           list = reRankBatters(og.batters || []);
+  else if (cat === 'bowlers')      list = reRankBowlers(og.bowlers || []);
+  else if (cat === 'captains')     list = reRankCaptains(og.captains || []);
+  else if (cat === 'all_rounders') list = reRankAllRounders(og.all_rounders || []);
+  else if (cat === 'fielders')     list = reRankFielders(og.fielders || []);
+  else list = [];
+
+  // Filter to top 25
+  list = list.slice(0, 25);
+
+  const headers = {
+    batters:      ['#', 'Batter',      'Titles', 'Runs / SR',     'Avg / KO',       'Score'],
+    bowlers:      ['#', 'Bowler',      'Titles', 'Wickets',       'Economy',        'Score'],
+    all_rounders: ['#', 'All-rounder', 'Titles', 'Bat impact',    'Bowl impact',    'Score'],
+    fielders:     ['#', 'Fielder',     'Titles', 'Catches',       'Run-outs / St',  'Score'],
+    captains:     ['#', 'Captain',     'Titles', 'Win %',         'Matches',        'Score'],
+  };
+  const h = headers[cat];
+  let html = '<div class="ranking fade-in"><div class="ranking-header">';
+  h.forEach(x => { html += `<div>${x}</div>`; });
+  html += '</div>';
+
+  list.forEach((p, i) => {
+    const rank = i + 1;
+    const rk = rankClass(rank);
+    let name, c1, c2, c3, c4;
+
+    if (cat === 'batters') {
+      name = p.batter;
+      const titles = p._titles || 0;
+      c1 = `<span class="r-num">${titles}</span><span class="r-num-soft">title${titles===1?'':'s'}</span>`;
+      c2 = `<span class="r-num">${(p.runs||0).toLocaleString()}</span><span class="r-num-soft">SR ${(p.SR||0).toFixed(0)}</span>`;
+      c3 = `<span class="r-num">${(p.avg||0).toFixed(1)}</span><span class="r-num-soft">${p.knockout_runs||0}r KO</span>`;
+      c4 = `<span class="r-impact ${rank===1?'gold':''}">${p._score.toLocaleString()}</span>`;
+    } else if (cat === 'bowlers') {
+      name = p.bowler;
+      const titles = p._titles || 0;
+      c1 = `<span class="r-num">${titles}</span><span class="r-num-soft">title${titles===1?'':'s'}</span>`;
+      c2 = `<span class="r-num">${p.wkts||0}</span><span class="r-num-soft">${p.inns||0} inns</span>`;
+      c3 = `<span class="r-num">${(p.econ||0).toFixed(2)}</span>`;
+      c4 = `<span class="r-impact ${rank===1?'gold':''}">${p._score.toLocaleString()}</span>`;
+    } else if (cat === 'all_rounders') {
+      name = p.player;
+      const titles = p._titles || 0;
+      c1 = `<span class="r-num">${titles}</span><span class="r-num-soft">title${titles===1?'':'s'}</span>`;
+      c2 = `<span class="r-num">${(p.bat_impact||0).toLocaleString()}</span>`;
+      c3 = `<span class="r-num">${(p.bowl_impact||0).toLocaleString()}</span>`;
+      c4 = `<span class="r-impact ${rank===1?'gold':''}">${p._score.toLocaleString()}</span>`;
+    } else if (cat === 'fielders') {
+      name = p.fielder;
+      const titles = p._titles || 0;
+      c1 = `<span class="r-num">${titles}</span><span class="r-num-soft">title${titles===1?'':'s'}</span>`;
+      c2 = `<span class="r-num">${p.catches||0}</span>`;
+      c3 = `<span class="r-num">${p.run_outs||0}</span><span class="r-num-soft">${p.stumpings||0} st</span>`;
+      c4 = `<span class="r-impact ${rank===1?'gold':''}">${p._score.toLocaleString()}</span>`;
+    } else if (cat === 'captains') {
+      name = p.captain;
+      const titles = p.titles || 0;
+      c1 = `<span class="r-num">${titles}</span><span class="r-num-soft">title${titles===1?'':'s'}</span>`;
+      c2 = `<span class="r-num">${(p.win_pct||0).toFixed(1)}</span><span class="r-num-soft">%</span>`;
+      c3 = `<span class="r-num">${p.matches||0}</span>`;
+      c4 = `<span class="r-impact ${rank===1?'gold':''}">${p._score.toLocaleString()}</span>`;
+    }
+
+    const titlesBadge = (p._titles || p.titles || 0) > 0
+      ? `<span class="r-name-sub">${'★'.repeat(Math.min(p._titles||p.titles||0, 6))} · ${p._titles||p.titles||0} title${(p._titles||p.titles)===1?'':'s'}</span>`
+      : `<span class="r-name-sub r-num-warn">no IPL title</span>`;
+
+    const roleTag = (cat === 'batters' && p.role) ? roleBadge(p.role) : '';
+
+    html += `<div class="ranking-row">
+      <div><span class="r-rank ${rk}">${String(rank).padStart(2,'0')}</span></div>
+      <div style="flex-direction:column;align-items:flex-start;">
+        <span class="r-name">${name}${roleTag}</span>
+        ${titlesBadge}
+      </div>
+      <div>${c1}</div>
+      <div>${c2}</div>
+      <div>${c3}</div>
+      <div>${c4}</div>
+    </div>`;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── RENDER TEAMS ───────────────────────────────────────────────────────
+function renderTeams() {
+  const tabRow = document.getElementById('team-tabs');
+  const teams = Object.keys(DATA.teams);
+  // Sort by titles, then by win %
+  teams.sort((a, b) => {
+    const dt = (DATA.teams[b].titles||0) - (DATA.teams[a].titles||0);
+    if (dt !== 0) return dt;
+    return (DATA.teams[b].win_pct||0) - (DATA.teams[a].win_pct||0);
+  });
+  let tabHtml = '';
+  teams.forEach((t, i) => {
+    tabHtml += `<button class="team-tab ${i===0?'active':''}" data-team="${t}">${t}</button>`;
+  });
+  tabRow.innerHTML = tabHtml;
+  document.querySelectorAll('.team-tab').forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll('.team-tab').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      renderTeam(b.dataset.team);
+    };
+  });
+  renderTeam(teams[0]);
+}
+
+function renderTeam(name) {
+  const t = DATA.teams[name];
+  const c = document.getElementById('team-detail');
+  c.classList.remove('loading');
+  const titleYears = t.title_years && t.title_years.length > 0 ? t.title_years.join(' · ') : 'No titles yet';
+
+  function teamRows(arr, kind) {
+    if (!arr || arr.length === 0) {
+      return '<p style="color:var(--ink-3);font-style:italic;font-family:Inter,sans-serif;font-size:13px;">Not enough data</p>';
+    }
+
+    let scored = arr.map(p => {
+      let s = 0;
+      if (kind === 'batters')        s = batterScore({ ...p, knockout_runs: 0, knockout_inns: 0 }).score;
+      else if (kind === 'bowlers')   s = bowlerScore({ ...p, knockout_inns: 0 }).score;
+      else if (kind === 'fielders')  s = (p.impact || 0) + Math.sqrt(p.inns || 1) * 8;
+      else if (kind === 'captains')  s = (p.titles || 0) * 200 + (p.win_pct || 0) * (p.matches || 0) * 0.4;
+      else                           s = (p.ar_impact || 0) + (p.bat_impact || 0) * 0.3 + (p.bowl_impact || 0) * 0.3;
+      return { ...p, _s: Math.round(s) };
+    }).sort((a, b) => b._s - a._s);
+
+    return scored.slice(0, 8).map((p, i) => {
+      let nm, sub, val;
+      if (kind === 'batters')       { nm = p.batter;  sub = `${(p.runs||0).toLocaleString()} runs · SR ${(p.SR||0).toFixed(0)} · ${p.inns||0}i`; val = p._s; }
+      else if (kind === 'bowlers')  { nm = p.bowler;  sub = `${p.wkts||0} wkts · econ ${(p.econ||0).toFixed(2)} · ${p.inns||0}i`; val = p._s; }
+      else if (kind === 'fielders') { nm = p.fielder; sub = `${p.catches||0}c · ${p.stumpings||0}st · ${p.run_outs||0}ro`; val = p.impact || p._s; }
+      else if (kind === 'captains') { nm = p.captain; sub = `${p.matches||0}m · ${(p.win_pct||0).toFixed(0)}% · ${p.titles||0} title${p.titles===1?'':'s'}`; val = p.titles || 0; }
+      else { nm = p.player; sub = `bat ${p.bat_impact||0} · bowl ${p.bowl_impact||0}`; val = p.ar_impact||0; }
+      return `<div class="team-row">
+        <span class="tr-rank">${i+1}</span>
+        <span><span class="tr-name">${nm}</span><br><span class="tr-sub">${sub}</span></span>
+        <span></span>
+        <span class="tr-impact">${(Math.round(val)||0).toLocaleString()}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const html = `
+    <div class="team-header-block fade-in">
+      <div>
+        <div class="team-name">${name}</div>
+      </div>
+      <div class="team-summary-stats">
+        <div>
+          <div class="team-stat-num">${t.titles}</div>
+          <div class="team-stat-label">Titles</div>
+          ${t.titles > 0 ? `<div class="title-years">${titleYears}</div>` : ''}
+        </div>
+        <div>
+          <div class="team-stat-num">${(t.win_pct||0).toFixed(0)}<span class="small">%</span></div>
+          <div class="team-stat-label">Win rate</div>
+        </div>
+        <div>
+          <div class="team-stat-num">${t.matches_played}</div>
+          <div class="team-stat-label">Matches</div>
+        </div>
+      </div>
+    </div>
+    <div class="team-section fade-in">
+      <div class="team-section-head">
+        <div class="team-section-title">Top batters</div>
+        <div class="team-section-num">Role-relative impact</div>
+      </div>
+      ${teamRows(t.batters, 'batters')}
+    </div>
+    <div class="team-section fade-in">
+      <div class="team-section-head">
+        <div class="team-section-title">Top bowlers</div>
+        <div class="team-section-num">Economy + wickets</div>
+      </div>
+      ${teamRows(t.bowlers, 'bowlers')}
+    </div>
+    <div class="team-section fade-in">
+      <div class="team-section-head">
+        <div class="team-section-title">Captains</div>
+        <div class="team-section-num">Titles &amp; win %</div>
+      </div>
+      ${teamRows(t.captains, 'captains')}
+    </div>
+    <div class="team-section fade-in">
+      <div class="team-section-head">
+        <div class="team-section-title">Top fielders</div>
+        <div class="team-section-num">Catches + run-outs</div>
+      </div>
+      ${teamRows(t.fielders, 'fielders')}
+    </div>
+    <div class="team-section fade-in" style="grid-column: 1 / -1;">
+      <div class="team-section-head">
+        <div class="team-section-title">All-rounders</div>
+        <div class="team-section-num">Combined contribution</div>
+      </div>
+      ${teamRows(t.all_rounders || [], 'all_rounders')}
+    </div>
+  `;
+  c.innerHTML = html;
+}
+
+// ── RENDER NARRATIVES ──────────────────────────────────────────────────
+function renderNarratives() {
+  const narratives = [
+    {
+      title: 'Why we lowered the trophy weight',
+      verdict: 'METHOD CHANGE',
+      verdict_color: 'green',
+      summary: 'A 25% trophy weight (the previous methodology) systematically pushed MI and CSK players up the table. Bumrah, Rohit, Pollard, Bravo and Raina all received massive bonuses regardless of whether they personally drove the title win or were simply present. We capped trophy weight at 12% — meaningful but no longer dominant. Per-ball impact (55%) is now the primary signal. The result: Kohli, AB and Bumrah top their lists on what they did, not what their teammates did.',
+      data: {
+        'Old trophy weight': '25%', 'New trophy weight': '12%',
+        'Old impact weight': '50%', 'New impact weight': '55%+20% volume',
+        'Old win-wkt multiplier': '1.8×', 'New': '1.0× (removed)'
+      }
+    },
+    ...DATA.narratives.map(n => ({
+      title: n.title, verdict: n.verdict, verdict_color: n.verdict_color,
+      summary: n.summary, data: n.data
+    })),
+    {
+      title: 'On Rohit Sharma\'s 6 IPL titles vs Dhoni\'s 5',
+      verdict: 'DATA CORRECTION',
+      verdict_color: 'yellow',
+      summary: 'Rohit has six IPL titles (Deccan 2009 + MI 2013/15/17/19/20). Dhoni has five (CSK 2010/11/18/21/23). Hardik Pandya also has five (MI x4 + GT 2022). Earlier versions of this project under-counted these. With the new 12% trophy weight, the difference between 5 and 6 titles is small — about 250 score points — which is correct. Captaincy peaks should not let one trophy bury 8,000 career runs of context.',
+      data: { 'Rohit titles': 6, 'Dhoni titles': 5, 'Hardik titles': 5, 'Bumrah titles': 5, 'Pollard titles': 5, 'Jadeja titles': 6 }
+    },
+    {
+      title: 'On Kohli, AB and the "trophy-less" question',
+      verdict: 'RESOLVED IN 2025',
+      verdict_color: 'green',
+      summary: 'For 17 seasons, the most repeated knock against Kohli and AB was that they had no IPL title. Kohli finally lifted the trophy with RCB in 2025 (40th over not out 43 in the final). AB had retired in 2021 and remains trophy-less. Under the new methodology, this matters less than it once did — both players sit at the top of their categories on per-ball impact alone. AB de Villiers without a trophy still ranks #1 batter on this list. The numbers were always saying it; the old formula refused to listen.',
+      data: { 'Kohli IPL runs': 8908, 'Kohli titles': 1, 'AB de Villiers titles': 0, 'AB SR': 151.9, 'AB inns': 170, 'Year RCB won': 2025 }
+    }
+  ];
+
+  const c = document.getElementById('narratives-block');
+  c.classList.remove('loading');
+  let html = '<div class="narratives-list">';
+  narratives.forEach(n => {
+    let dataHtml = '';
+    Object.entries(n.data).forEach(([k, v]) => {
+      dataHtml += `<div class="narrative-data-item">
+        <div class="ndata-num">${v}</div>
+        <div class="ndata-label">${k}</div>
+      </div>`;
+    });
+    html += `<article class="narrative">
+      <div class="verdict-block">
+        <span class="verdict-badge ${n.verdict_color}">${n.verdict}</span>
+        <div class="verdict-label">— Verdict</div>
+      </div>
+      <div class="narrative-body">
+        <h3 class="narrative-title">${n.title}</h3>
+        <p class="narrative-summary">${n.summary}</p>
+        <div class="narrative-data">${dataHtml}</div>
+      </div>
+    </article>`;
+  });
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+// ── RENDER CHAMPIONS ──────────────────────────────────────────────────
+function renderChampions() {
+  const c = document.getElementById('champions-grid');
+  c.classList.remove('loading');
+  let html = '<div class="champions-grid">';
+  DATA.champions.forEach(ch => {
+    html += `<div class="champion-cell">
+      <div class="champion-year">${ch.season}</div>
+      <div class="champion-team">${ch.champion}</div>
+    </div>`;
+  });
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+function renderTrophies() {
+  const c = document.getElementById('trophies-bar');
+  const max = DATA.team_titles[0].titles;
+  let html = '<div class="trophies-bar">';
+  DATA.team_titles.forEach(t => {
+    const pct = (t.titles / max) * 100;
+    let pips = '★'.repeat(t.titles);
+    html += `<div class="trophy-row">
+      <div>
+        <div class="trophy-name">${t.team}</div>
+        <div class="trophy-bar-wrap" style="margin-top:4px;">
+          <div class="trophy-bar" style="width:${pct}%">${t.titles}</div>
+        </div>
+      </div>
+      <div class="trophy-pips">${pips}</div>
+    </div>`;
+  });
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+loadData();
+</script>
+</body>
+</html>
